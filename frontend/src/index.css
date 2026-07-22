@@ -244,3 +244,93 @@ input {
     grid-template-columns: 1fr;
   }
 }
+
+
+.task-form-section {
+  margin-bottom: 32px;
+  padding: 24px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgb(0 0 0 / 7%);
+}
+
+.task-form-heading {
+  margin-bottom: 22px;
+}
+
+.task-form-heading h2 {
+  margin: 0 0 6px;
+}
+
+.task-form-heading p {
+  margin: 0;
+  color: #6b7280;
+}
+
+.task-form {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.task-title-field,
+.task-description-field {
+  grid-column: 1 / -1;
+}
+
+.task-form textarea,
+.task-form select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: white;
+  font: inherit;
+}
+
+.task-form textarea {
+  resize: vertical;
+}
+
+.task-form textarea:focus,
+.task-form select:focus {
+  outline: 2px solid #2563eb;
+  border-color: transparent;
+}
+
+.task-form-message,
+.task-form-actions {
+  grid-column: 1 / -1;
+}
+
+.task-form-actions button {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  background: #2563eb;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.task-form-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.success-message {
+  color: #15803d;
+}
+
+@media (max-width: 768px) {
+  .task-form {
+    grid-template-columns: 1fr;
+  }
+
+  .task-title-field,
+  .task-description-field,
+  .task-form-message,
+  .task-form-actions {
+    grid-column: auto;
+  }
+}

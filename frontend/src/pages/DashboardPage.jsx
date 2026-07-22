@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/api";
+import TaskForm from "../components/TaskForm";
 
 function DashboardPage() {
   const navigate = useNavigate();
@@ -107,6 +108,8 @@ function DashboardPage() {
           <strong>{statistics.overdue}</strong>
         </article>
       </section>
+
+      <TaskForm onTaskCreated={fetchTasks} />
 
       <section className="tasks-section">
         <div className="section-header">
