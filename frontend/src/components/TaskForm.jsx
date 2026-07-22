@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import api from "../api/api";
 
 function getTodayDate() {
@@ -10,19 +10,45 @@ function getTodayDate() {
     .split("T")[0];
 }
 
-const initialFormData = {
-  title: "",
-  description: "",
-  priority: "MEDIUM",
-  status: "PENDING",
-  dueDate: getTodayDate(),
-};
+function createInitialFormData() {
+  return {
+    title: "",
+    description: "",
+    priority: "MEDIUM",
+    status: "PENDING",
+    dueDate: getTodayDate(),
+  };
+}
 
-function TaskForm({ onTaskCreated }) {
-  const [formData, setFormData] = useState(initialFormData);
+function TaskForm({
+  editingTask,
+  onTaskSaved,
+  onCancelEdit,
+}) {
+  const [formData, setFormData] = useState(
+    createInitialFormData(),
+  );
+
   const [error, setError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    setError("");
+
+    if (editingTask) {
+      setFormData({
+        title: editingTask.title || "",
+        description: editingTask.description || "",
+        priority: editingTask.priority,
+        status: editingTask.status,
+        dueDate: editingTask.dueDate
+          ? editingTask.dueDate.split("T")[0]
+          : getTodayDate(),
+      });
+    } else {
+      setFormData(createInitialFormData());
+    }
+  }, [editingTask]);
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -59,9 +85,7 @@ function TaskForm({ onTaskCreated }) {
 
   async function handleSubmit(event) {
     event.preventDefault();
-
     setError("");
-    setSuccessMessage("");
 
     const validationError = validateForm();
 
@@ -70,26 +94,36 @@ function TaskForm({ onTaskCreated }) {
       return;
     }
 
+    const taskData = {
+      title: formData.title.trim(),
+      description: formData.description.trim(),
+      priority: formData.priority,
+      status: formData.status,
+      dueDate: formData.dueDate,
+    };
+
     try {
       setIsSubmitting(true);
 
-      const response = await api.post("/tasks", {
-        title: formData.title.trim(),
-        description: formData.description.trim(),
-        priority: formData.priority,
-        status: formData.status,
-        dueDate: formData.dueDate,
-      });
+      let response;
+      let action;
 
-      setFormData({
-        ...initialFormData,
-        dueDate: getTodayDate(),
-      });
+      if (editingTask) {
+        response = await api.put(
+          `/tasks/${editingTask.id}`,
+          taskData,
+        );
 
-      setSuccessMessage("Task created successfully.");
+        action = "update";
+      } else {
+        response = await api.post("/tasks", taskData);
+        action = "create";
+      }
 
-      if (onTaskCreated) {
-        await onTaskCreated(response.data.task);
+      setFormData(createInitialFormData());
+
+      if (onTaskSaved) {
+        await onTaskSaved(response.data.task, action);
       }
     } catch (requestError) {
       const backendErrors =
@@ -102,18 +136,34 @@ function TaskForm({ onTaskCreated }) {
       setError(
         firstBackendError ||
           requestError.response?.data?.message ||
-          "Unable to create task.",
+          "Unable to save task.",
       );
     } finally {
       setIsSubmitting(false);
     }
   }
 
+  function handleCancel() {
+    setError("");
+    setFormData(createInitialFormData());
+
+    if (onCancelEdit) {
+      onCancelEdit();
+    }
+  }
+
   return (
     <section className="task-form-section">
       <div className="task-form-heading">
-        <h2>Create Task</h2>
-        <p>Add a new task to your dashboard.</p>
+        <h2>
+          {editingTask ? "Edit Task" : "Create Task"}
+        </h2>
+
+        <p>
+          {editingTask
+            ? "Update the selected task."
+            : "Add a new task to your dashboard."}
+        </p>
       </div>
 
       <form className="task-form" onSubmit={handleSubmit}>
@@ -147,7 +197,9 @@ function TaskForm({ onTaskCreated }) {
         </div>
 
         <div className="form-group">
-          <label htmlFor="task-priority">Priority</label>
+          <label htmlFor="task-priority">
+            Priority
+          </label>
 
           <select
             id="task-priority"
@@ -174,12 +226,16 @@ function TaskForm({ onTaskCreated }) {
             <option value="IN_PROGRESS">
               In Progress
             </option>
-            <option value="COMPLETED">Completed</option>
+            <option value="COMPLETED">
+              Completed
+            </option>
           </select>
         </div>
 
         <div className="form-group">
-          <label htmlFor="task-due-date">Due Date</label>
+          <label htmlFor="task-due-date">
+            Due Date
+          </label>
 
           <input
             id="task-due-date"
@@ -192,24 +248,33 @@ function TaskForm({ onTaskCreated }) {
         </div>
 
         {error && (
-          <p className="error-message task-form-message" role="alert">
-            {error}
-          </p>
-        )}
-
-        {successMessage && (
           <p
-            className="success-message task-form-message"
-            role="status"
+            className="error-message task-form-message"
+            role="alert"
           >
-            {successMessage}
+            {error}
           </p>
         )}
 
         <div className="task-form-actions">
           <button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Creating..." : "Create Task"}
+            {isSubmitting
+              ? "Saving..."
+              : editingTask
+                ? "Update Task"
+                : "Create Task"}
           </button>
+
+          {editingTask && (
+            <button
+              className="secondary-button"
+              type="button"
+              onClick={handleCancel}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </button>
+          )}
         </div>
       </form>
     </section>
