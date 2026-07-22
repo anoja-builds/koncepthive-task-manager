@@ -2,6 +2,7 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import authRoutes from "./routes/auth.routes.js";
+import taskRoutes from "./routes/task.routes.js";
 
 const app = express();
 
@@ -21,6 +22,7 @@ app.get("/api/health", (_req, res) => {
 });
 
 app.use("/api/auth", authRoutes);
+app.use("/api/tasks", taskRoutes);
 
 const port = Number(process.env.PORT) || 5000;
 
