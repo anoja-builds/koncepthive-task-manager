@@ -5,13 +5,12 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-  "dev": "tsx watch src/server.js",
-  "start": "tsx src/server.js"
-},
+    "dev": "tsx watch src/server.js",
+    "start": "tsx src/server.js"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  
   "dependencies": {
     "@prisma/adapter-pg": "^7.9.0",
     "@prisma/client": "^7.9.0",
